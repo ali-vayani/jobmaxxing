@@ -30,6 +30,6 @@ Software engineering internships and new-grad software engineer roles (backend, 
 
 ## Rules
 
-- Only register real, currently-open postings with a direct link to the posting. No aggregator links (LinkedIn/Indeed) if the company's own posting page is available.
+- Only register real, currently-open postings with a direct link to the posting. The searcher must fetch the exact URL and confirm it loads an open posting before registering — never a constructed/guessed URL, and no aggregator links (LinkedIn/Indeed) if the company's own posting page is available.
 - Never email a job that `jobsdb.py add` reported as DUPLICATE.
 - If a company's careers page can't be found or has no matching roles, the subagent should still write its cache file noting that, so we don't re-search it every run.
