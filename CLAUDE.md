@@ -1,13 +1,13 @@
 # Job Search Pipeline
 
-Automated pipeline: search company career pages for matching jobs → dedupe against `jobs.db` → pick/build a tailored resume → email each new job (resume attached) to the configured address. Runs headless via `claude -p` on an hourly launchd schedule.
+Automated pipeline: search company career pages for matching jobs → dedupe against `jobs.db` → pick/build a tailored resume → email each new job (resume attached) to the configured address. Runs headless via `claude -p` on a launchd schedule (every 2 hours by default).
 
 ## How it works
 
 - `PROMPT.md` — the orchestrator prompt the headless run follows. Target roles are defined at the top (edit them there).
 - `companies.txt` — companies to monitor, one per line.
 - `.claude/agents/job-searcher.md` — Haiku subagent, one spawned per company needing a search.
-- `.companies/{slug}.md` — per-company search cache. Fresh = younger than `TTL_DAYS` (1) and survives a `REFRESH_PROB` (3% per run — tuned for hourly cadence) random refresh roll; both knobs are in `scripts/cache.py`.
+- `.companies/{slug}.md` — per-company search cache. Fresh = younger than `TTL_DAYS` (1) and survives a `REFRESH_PROB` (3% per run) random refresh roll; both knobs are in `scripts/cache.py`.
 - `jobs.db` — SQLite. Jobs dedupe on normalized URL; `status` is `found` → `emailed`; `resume_path`/`resume_kind`/`resume_fit` record what's attached and how it fits the JD.
 - `config.json` — `resume_mode`: `baseline` (always closest baseline), `hybrid` (default; baseline unless a custom clearly helps), or `custom` (build per-job every time).
 - `.claude/agents/resume-tailor.md` — Sonnet subagent, one per new job: applies the resume mode, writes a JD fit assessment (strengths/gaps, goes in the email), registers via `jobsdb.py set-resume`. Custom builds are flagged for review in the email. See `resume/README.md`.

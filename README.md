@@ -1,11 +1,11 @@
 # Job Search Pipeline
 
-An automated pipeline that watches a list of companies for new job postings, dedupes them against everything it's already seen, picks (or builds) the best-fitting resume for each, and emails each new job to me with the resume attached. Runs hourly using headless Claude Code (`claude -p`) — no API key billing, just the existing Claude subscription.
+An automated pipeline that watches a list of companies for new job postings, dedupes them against everything it's already seen, picks (or builds) the best-fitting resume for each, and emails each new job to me with the resume attached. Runs every 2 hours using headless Claude Code (`claude -p`) — no API key billing, just the existing Claude subscription.
 
 ## How it works
 
 ```
-launchd (hourly)
+launchd (every 2 hours)
    └─> claude -p "Follow the instructions in PROMPT.md"
          ├─ 1. cache.py check       → which companies need a fresh search?
          ├─ 2. job-searcher agents  → one cheap Haiku subagent per company, in parallel
@@ -28,7 +28,7 @@ The split is deliberate: **Claude handles the fuzzy work** (finding careers page
 
 ### Caching
 
-Each company's search results are cached in `.companies/{slug}.md`. A cache file is reused only if it's **younger than 1 day** AND survives a **3% random refresh roll** — so with hourly runs, every company gets a guaranteed fresh search daily plus roughly one random early refresh per day, and the other ~22 runs are cheap cache hits. Both knobs live at the top of `scripts/cache.py`.
+Each company's search results are cached in `.companies/{slug}.md`. A cache file is reused only if it's **younger than 1 day** AND survives a **3% random refresh roll** — so with runs every 2 hours, every company gets a guaranteed fresh search daily plus an occasional random early refresh, and the other ~11 runs are cheap cache hits. Both knobs live at the top of `scripts/cache.py`.
 
 ### Dedup
 
@@ -100,7 +100,7 @@ Manual version:
    cp launchd/com.alivayani.jobsearch.plist ~/Library/LaunchAgents/
    launchctl load ~/Library/LaunchAgents/com.alivayani.jobsearch.plist
    ```
-   Runs hourly. Logs land in `logs/run-YYYY-MM-DD.log`, one file per day. (launchd over cron because it catches up after the Mac wakes from sleep, and it won't start a second run while the previous one is still going.)
+   Runs every 2 hours (`StartInterval` in the plist). Logs land in `logs/run-YYYY-MM-DD.log`, one file per day. (launchd over cron because it catches up after the Mac wakes from sleep, and it won't start a second run while the previous one is still going.)
 
    **Note:** launchd only fires while the Mac is awake — it catches up once on wake, but hours spent asleep are skipped. For true around-the-clock checking, keep the machine awake (e.g. `caffeinate`, Amphetamine, or plugged in with sleep disabled); the missed-run catch-up plus the 1-day cache TTL means nothing is permanently missed either way.
 

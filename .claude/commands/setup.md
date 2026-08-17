@@ -49,7 +49,7 @@ cd <this repo> && mkdir -p logs && claude -p "Follow the instructions in PROMPT.
 ## Step 6 — Schedule (launchd)
 
 Ask if they want the schedule installed. If yes:
-- The default is **hourly** (`StartInterval` 3600 in `launchd/com.alivayani.jobsearch.plist`); ask if they want a different cadence and edit the interval if so. If they change cadence significantly, mention that `TTL_DAYS`/`REFRESH_PROB` in `scripts/cache.py` are tuned for hourly runs and may want retuning. Verify the `WorkingDirectory` in the plist matches this repo's actual path, and fix it if not.
+- The default is **every 2 hours** (`StartInterval` 7200 in `launchd/com.alivayani.jobsearch.plist`); ask if they want a different cadence and edit the interval if so. If they change cadence significantly, mention that `TTL_DAYS`/`REFRESH_PROB` in `scripts/cache.py` may want retuning. Verify the `WorkingDirectory` in the plist matches this repo's actual path, and fix it if not.
 - Then install:
 ```
 cp launchd/com.alivayani.jobsearch.plist ~/Library/LaunchAgents/ && launchctl load ~/Library/LaunchAgents/com.alivayani.jobsearch.plist
