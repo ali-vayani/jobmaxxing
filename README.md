@@ -67,6 +67,7 @@ Whatever the mode, every email also includes a **fit assessment**: which resume 
 | `scripts/jobsdb.py` | DB CRUD: `add` (dedupe), `pending`, `mark`, `set-resume`, `list`. |
 | `scripts/send_email.py` | Gmail SMTP sender; fills `email/TEMPLATE.md`, attaches the job's resume. |
 | `scripts/compile_resume.py` | pdflatex wrapper with a hard 1-page check (outputs to `resume/build/`). |
+| `scripts/log_usage.py` | Records each scheduled run's Claude Code usage (tokens, turns, duration, cost estimate) to `logs/usage.jsonl`; `--report` prints recent runs + totals. |
 | `email/TEMPLATE.md` | Email template (`Subject:` first line, body below, `{placeholders}`). |
 | `launchd/*.plist` | Daily schedule definition (install manually, see below). |
 | `resume/` | Bullet database (source of truth), baseline PDFs + `.tex` sources, generated custom resumes. See `resume/README.md`. |
@@ -110,5 +111,7 @@ Manual version:
 python3 scripts/jobsdb.py list                                        # everything ever found
 python3 scripts/jobsdb.py pending                                     # found but not yet emailed
 python3 scripts/cache.py check                                        # which companies would be searched right now
+python3 scripts/log_usage.py --report                                 # per-run usage: tokens, turns, duration, cost
+
 python3 scripts/compile_resume.py resume/baselines/<PREFIX>_AI.tex    # rebuild a baseline after edits
 ```

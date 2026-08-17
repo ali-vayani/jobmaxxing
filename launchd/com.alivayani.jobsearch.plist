@@ -9,7 +9,7 @@
     <array>
         <string>/bin/zsh</string>
         <string>-lc</string>
-        <string>claude -p "Follow the instructions in PROMPT.md" >> "logs/run-$(date +%Y-%m-%d).log" 2>&amp;1</string>
+        <string>claude -p "Follow the instructions in PROMPT.md" --output-format json 2>> "logs/run-$(date +%Y-%m-%d).log" | python3 scripts/log_usage.py >> "logs/run-$(date +%Y-%m-%d).log" 2>&amp;1</string>
     </array>
 
     <key>WorkingDirectory</key>
