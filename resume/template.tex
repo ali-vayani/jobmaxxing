@@ -1,0 +1,160 @@
+%-------------------------
+% Resume in LaTeX — Jake Gutierrez template (https://github.com/sb2nov/resume), MIT
+% BLANK TEMPLATE — used by /setup (resume onboarding) to build baseline resumes.
+% Replace every <PLACEHOLDER>. Compile with: python3 scripts/compile_resume.py <file>
+%------------------------
+
+\documentclass[letterpaper,10.5pt]{article}
+
+\usepackage{latexsym}
+\usepackage[empty]{fullpage}
+\usepackage{titlesec}
+\usepackage{marvosym}
+\usepackage[usenames,dvipsnames]{color}
+\usepackage{verbatim}
+\usepackage{enumitem}
+\usepackage[hidelinks]{hyperref}
+\usepackage{fancyhdr}
+\usepackage[english]{babel}
+\usepackage{tabularx}
+\usepackage{fontawesome5}
+\usepackage{multicol}
+\setlength{\multicolsep}{-3.0pt}
+\setlength{\columnsep}{-1pt}
+\input{glyphtounicode}
+
+\pagestyle{fancy}
+\fancyhf{}
+\fancyfoot{}
+\renewcommand{\headrulewidth}{0pt}
+\renewcommand{\footrulewidth}{0pt}
+
+\addtolength{\oddsidemargin}{-0.6in}
+\addtolength{\evensidemargin}{-0.5in}
+\addtolength{\textwidth}{1.19in}
+\addtolength{\topmargin}{-.7in}
+\addtolength{\textheight}{1.4in}
+
+\urlstyle{same}
+
+\raggedbottom
+\raggedright
+\setlength{\tabcolsep}{0in}
+
+\titleformat{\section}{
+  \vspace{-4pt}\scshape\raggedright\large\bfseries
+}{}{0em}{}[\color{black}\titlerule \vspace{-5pt}]
+
+\pdfgentounicode=1
+
+\newcommand{\resumeItem}[1]{
+  \item\small{
+    {#1 \vspace{-2pt}}
+  }
+}
+
+\newcommand{\resumeSubheading}[4]{
+  \vspace{-2pt}\item
+    \begin{tabular*}{1.0\textwidth}[t]{l@{\extracolsep{\fill}}r}
+      \textbf{#1} & \textbf{\small #2} \\
+      \textit{\small#3} & \textit{\small #4} \\
+    \end{tabular*}\vspace{-7pt}
+}
+
+\newcommand{\resumeProjectHeading}[2]{
+    \item
+    \begin{tabular*}{1.001\textwidth}{l@{\extracolsep{\fill}}r}
+      \small#1 & \textbf{\small #2}\\
+    \end{tabular*}\vspace{-7pt}
+}
+
+\renewcommand\labelitemi{$\vcenter{\hbox{\tiny$\bullet$}}$}
+\renewcommand\labelitemii{$\vcenter{\hbox{\tiny$\bullet$}}$}
+
+\newcommand{\resumeSubHeadingListStart}{\begin{itemize}[leftmargin=0.0in, label={}]}
+\newcommand{\resumeSubHeadingListEnd}{\end{itemize}}
+\newcommand{\resumeItemListStart}{\begin{itemize}}
+\newcommand{\resumeItemListEnd}{\end{itemize}\vspace{-5pt}}
+
+%-------------------------------------------
+\begin{document}
+
+%----------HEADING----------
+\begin{center}
+    {\Huge \scshape <FULL NAME>} \\ \vspace{1pt}
+    \small \raisebox{-0.1\height} <PHONE>\quad\textbar\quad
+    \href{mailto:<EMAIL>}{\underline{<EMAIL>}} \quad\textbar\quad
+    \href{https://www.linkedin.com/in/<LINKEDIN>/}{\underline{linkedin.com/in/<LINKEDIN>}}\quad\textbar\quad
+    \href{https://github.com/<GITHUB>}{\underline{github.com/<GITHUB>}}
+    \vspace{-8pt}
+\end{center}
+
+%-----------EDUCATION-----------
+\section{Education}
+  \resumeSubHeadingListStart
+    \resumeSubheading
+      {<UNIVERSITY>}{<GRAD DATE>}
+      {<DEGREE>}{<GPA (optional — remove field if unused)>}
+  \resumeSubHeadingListEnd
+
+%-----------COURSEWORK (optional — delete section if unused)-----------
+\section{Relevant Coursework}
+    \begin{multicols}{3}
+        \begin{itemize}[itemsep=-5pt, parsep=3pt]
+            \item\small <Course 1>
+            \item\small <Course 2>
+            \item\small <Course 3>
+            \item\small <Course 4>
+            \item\small <Course 5>
+            \item\small <Course 6>
+        \end{itemize}
+    \end{multicols}
+    \vspace{-6pt}
+
+%-----------EXPERIENCE-----------
+\section{Experience}
+  \resumeSubHeadingListStart
+    \resumeSubheading
+      {<COMPANY>}{<DATES>}
+      {<TITLE>}{<LOCATION>}
+      \resumeItemListStart
+        \resumeItem{<Bullet — XYZ format: accomplished X, measured by Y, by doing Z. Bold key numbers/tech with \textbf{...}>}
+        \resumeItem{<Bullet>}
+      \resumeItemListEnd
+  \resumeSubHeadingListEnd
+\vspace{-16pt}
+
+%-----------LEADERSHIP (optional — rename or delete)-----------
+\section{Open Source \& Leadership}
+    \resumeSubHeadingListStart
+    \resumeSubheading{<ORG>}{<DATES>}{<ROLE>}{<LOCATION>}
+        \resumeItemListStart
+            \resumeItem{<Bullet>}
+        \resumeItemListEnd
+    \resumeSubHeadingListEnd
+    \vspace{-16pt}
+
+%-----------PROJECTS-----------
+\section{Projects}
+    \vspace{-5pt}
+    \resumeSubHeadingListStart
+      \resumeProjectHeading
+          {\textbf{<PROJECT NAME>} $|$ \emph{<Tech, Stack>}}{}
+            \resumeItemListStart
+              \resumeItem{<Bullet>}
+            \resumeItemListEnd
+    \resumeSubHeadingListEnd
+\vspace{-15pt}
+
+%-----------SKILLS-----------
+\section{Technical Skills}
+ \begin{itemize}[leftmargin=0.15in, label={}]
+    \small{\item{
+    \textbf{Languages:} <...> \\
+    \textbf{Tools \& Platforms:} <...> \\
+    \textbf{Frameworks \& Libraries:} <...> \\
+    }}
+ \end{itemize}
+ \vspace{-14pt}
+
+\end{document}

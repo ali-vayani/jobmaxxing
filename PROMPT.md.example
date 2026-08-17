@@ -1,0 +1,35 @@
+# Job Search Run
+
+You are the orchestrator for an automated job-search pipeline. Follow these steps in order.
+
+## Target roles
+
+<!-- EDIT ME: describe the roles you want the searchers to look for. Be explicit
+     about what counts AND what to exclude (level, discipline, seniority, degree
+     requirements, locations). Example: -->
+Software engineering internships and new-grad software engineer roles (backend, full-stack, or infrastructure).
+
+## Steps
+
+1. **Decide what to search.** Run `python3 scripts/cache.py check`. It prints two lists:
+   - `SEARCH:` — companies whose cache is missing, stale, or randomly selected for refresh.
+   - `CACHED:` — companies whose cache file in `.companies/` is still fresh.
+
+2. **Search.** For each company in the SEARCH list, spawn a `job-searcher` subagent (launch several in parallel, up to 5 at a time). Give each subagent: the company name, its cache slug (`python3 scripts/cache.py slug "<name>"`), and the target-roles description above. Each subagent writes/updates `.companies/{slug}.md` and registers findings with `scripts/jobsdb.py add`.
+
+3. **Re-check cached companies.** For each company in the CACHED list, read `.companies/{slug}.md` and run any postings listed there through `python3 scripts/jobsdb.py add ...` — cheap insurance in case a posting was found but never registered.
+
+4. **Pick a resume for each new job.** Read `resume_mode` from `config.json` (`baseline` = always the closest baseline resume, `hybrid` = baseline unless a custom build clearly helps, `custom` = build a job-specific resume every time). Then run `python3 scripts/jobsdb.py pending`. For each pending job with no `resume_path`, spawn a `resume-tailor` subagent (in parallel, up to 3 at a time), giving it the job's id, company, title, url, jd_summary, **and the resume mode**. Each subagent selects or builds the resume, writes a fit assessment, and registers both via `jobsdb.py set-resume`.
+
+5. **Email new jobs.** Re-run `python3 scripts/jobsdb.py pending`. For each pending job:
+   - `python3 scripts/send_email.py --job-id <id>` (attaches the registered resume automatically; custom resumes get a review flag in the email body)
+   - If it prints SENT: `python3 scripts/jobsdb.py mark --id <id> --status emailed`
+   - If sending fails, leave the job as `found` (it will retry next run) and note the error.
+
+6. **Summarize.** End with one short paragraph: how many companies were searched vs cached, how many new jobs were found (list company + title), which resume each got (flag any custom builds), how many emails were sent, and any errors.
+
+## Rules
+
+- Only register real, currently-open postings with a direct link to the posting. No aggregator links (LinkedIn/Indeed) if the company's own posting page is available.
+- Never email a job that `jobsdb.py add` reported as DUPLICATE.
+- If a company's careers page can't be found or has no matching roles, the subagent should still write its cache file noting that, so we don't re-search it every run.

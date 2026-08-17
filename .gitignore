@@ -1,0 +1,25 @@
+# Run state (created by the pipeline)
+.companies/
+jobs.db
+logs/
+__pycache__/
+resume/build/
+
+# Personal configuration — copy the .example files to create your own
+companies.txt
+PROMPT.md
+config.json
+
+# Personal resume content (built by /setup-resumes)
+resume/resume-bullet-database.md
+resume/resume-bullet-database.backup.md
+resume/baselines/
+resume/custom/*
+!resume/custom/.gitkeep
+resume/*.pdf
+resume/*.tex
+!resume/template.tex
+
+# Local overrides / OS noise
+.claude/settings.local.json
+.DS_Store

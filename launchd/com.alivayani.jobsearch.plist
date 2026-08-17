@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>Label</key>
+    <string>com.alivayani.jobsearch</string>
+
+    <key>ProgramArguments</key>
+    <array>
+        <string>/bin/zsh</string>
+        <string>-lc</string>
+        <string>claude -p "Follow the instructions in PROMPT.md" >> "logs/run-$(date +%Y-%m-%d).log" 2>&amp;1</string>
+    </array>
+
+    <key>WorkingDirectory</key>
+    <string>/Users/alivayani/code/jobs</string>
+
+    <!-- Every 2 hours. launchd catches up after sleep (unlike cron) and never starts a
+         second instance while the previous run is still going. -->
+    <key>StartInterval</key>
+    <integer>7200</integer>
+</dict>
+</plist>

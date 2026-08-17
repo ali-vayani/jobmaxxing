@@ -1,0 +1,15 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(python3 scripts/*)",
+      "Bash(mkdir .companies*)",
+      "WebSearch",
+      "WebFetch",
+      "Read",
+      "Write(.companies/**)",
+      "Write(resume/custom/**)",
+      "Edit(resume/custom/**)",
+      "Task"
+    ]
+  }
+}
