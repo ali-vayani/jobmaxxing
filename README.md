@@ -28,7 +28,7 @@ The split is deliberate: **Claude handles the fuzzy work** (finding careers page
 
 ### Caching
 
-Each company's search results are cached in `.companies/{slug}.md`. A cache file is reused only if it's **younger than 1 day** AND survives a **3% random refresh roll** — so with runs every 2 hours, every company gets a guaranteed fresh search daily plus an occasional random early refresh, and the other ~11 runs are cheap cache hits. Both knobs live at the top of `scripts/cache.py`.
+Each company's cache in `.companies/{slug}.md` stores the **route** — the careers-page URL discovery landed on — plus the last results. The careers page itself is re-checked **every run**: cached companies get a lightweight "re-check mode" search that fetches the known URL directly instead of re-discovering it. Full discovery (web-searching for the careers page again, in case it moved) reruns when the cache is **older than 1 day** or on a **3% random refresh roll**. Both knobs live at the top of `scripts/cache.py`.
 
 ### Dedup
 
