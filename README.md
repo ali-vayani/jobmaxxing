@@ -12,10 +12,14 @@ launchd (hourly)
          │       ├─ finds the careers page + matching postings (web search)
          │       ├─ writes cache: .companies/{slug}.md
          │       └─ registers each posting: jobsdb.py add  → NEW or DUPLICATE
-         ├─ 3. resume-tailor agents → one Sonnet subagent per NEW job
-         │       ├─ usually: picks the closest of 5 baseline resumes
-         │       └─ rarely: builds a custom .tex from the bullet database,
-         │          compiles + 1-page check, flags it for manual review
+         ├─ 3. resume-tailor agents → one Sonnet subagent per NEW job,
+         │       governed by resume_mode in config.json:
+         │       ├─ baseline: always picks the closest of 5 baseline resumes
+         │       ├─ hybrid (default): closest baseline, unless the JD clearly
+         │       │    calls for a custom build
+         │       └─ custom: builds a job-specific .tex from the bullet database
+         │            for every job — compiles + 1-page check, and any custom
+         │            build is flagged for manual review
          └─ 4. send_email.py        → one email per NEW job with the resume
                                       attached, then mark emailed
 ```
