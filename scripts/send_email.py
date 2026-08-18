@@ -3,6 +3,7 @@
 
 Usage:
   send_email.py --job-id N [--attach path/to/resume.pdf]
+  send_email.py --summary "Subject line" < body.txt   (plain-text body on stdin)
 
 Credentials: set GMAIL_APP_PASSWORD in the environment (a Google App Password,
 not your account password — requires 2FA; create one at
@@ -44,20 +45,43 @@ def get_app_password() -> str:
     return password
 
 
+def send(msg: EmailMessage) -> None:
+    msg["From"] = EMAIL_ADDRESS
+    msg["To"] = EMAIL_ADDRESS
+    with smtplib.SMTP("smtp.gmail.com", 587) as smtp:
+        smtp.starttls()
+        smtp.login(EMAIL_ADDRESS, get_app_password())
+        smtp.send_message(msg)
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--job-id", type=int, required=True)
+    mode = parser.add_mutually_exclusive_group(required=True)
+    mode.add_argument("--job-id", type=int)
+    mode.add_argument("--summary", metavar="SUBJECT",
+                      help="Send a run-summary email with this subject; body read from stdin")
     parser.add_argument("--attach", help="Optional file to attach (e.g. tailored resume PDF)")
     args = parser.parse_args()
 
+    if args.summary:
+        body_text = sys.stdin.read().strip()
+        if not body_text:
+            sys.exit("error: --summary expects the email body on stdin")
+        msg = EmailMessage()
+        msg["Subject"] = f"[jobs-pipeline] {args.summary}"
+        msg.set_content(body_text)
+        send(msg)
+        print(f"SENT summary: {args.summary}")
+        return
+
     conn = sqlite3.connect(DB_PATH)
     row = conn.execute(
-        "SELECT company, title, url, jd_summary, resume_path, resume_kind, resume_fit "
+        "SELECT company, title, url, jd_summary, term, resume_path, resume_kind, resume_fit, resume_score "
         "FROM jobs WHERE id = ?", (args.job_id,)
     ).fetchone()
     if row is None:
         sys.exit(f"error: no job with id {args.job_id}")
-    company, title, url, jd_summary, resume_path, resume_kind, resume_fit = row
+    company, title, url, jd_summary, term, resume_path, resume_kind, resume_fit, resume_score = row
 
     attach_path = args.attach or resume_path
 
@@ -68,6 +92,7 @@ def main() -> None:
         "title": title,
         "url": url,
         "jd_summary": jd_summary or "(no summary)",
+        "term": term or "Term TBD",
     }
     subject = subject_line.removeprefix("Subject:").strip().format(**fields)
 
@@ -81,12 +106,12 @@ def main() -> None:
             )
         else:
             body_text += f"\n\nAttached resume: {Path(attach_path).name} (baseline)."
+        if resume_score is not None:
+            body_text += f"\n\nResume fit score: {resume_score}/10"
         if resume_fit:
             body_text += f"\n\nResume fit vs. this JD:\n{resume_fit}"
 
     msg = EmailMessage()
-    msg["From"] = EMAIL_ADDRESS
-    msg["To"] = EMAIL_ADDRESS
     msg["Subject"] = subject
     msg.set_content(body_text)
 
@@ -101,10 +126,7 @@ def main() -> None:
             filename=pdf.name,
         )
 
-    with smtplib.SMTP("smtp.gmail.com", 587) as smtp:
-        smtp.starttls()
-        smtp.login(EMAIL_ADDRESS, get_app_password())
-        smtp.send_message(msg)
+    send(msg)
     print(f"SENT job {args.job_id}: {company} - {title}")
 
 

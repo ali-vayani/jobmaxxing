@@ -28,6 +28,16 @@ Software engineering internships and new-grad software engineer roles (backend, 
 
 6. **Summarize.** End with one short paragraph: how many companies were searched vs cached, how many new jobs were found (list company + title), which resume each got (flag any custom builds), how many emails were sent, and any errors.
 
+7. **Email the summary if anything went wrong or stands out.** If the run hit any bug/error (tool or permission denials, script failures, email send failures, subagents misbehaving) OR surfaced anything noteworthy (an urgent application deadline, a posting that needs a manual look, a company whose careers page broke or moved), email the summary:
+
+   ```
+   python3 scripts/send_email.py --summary "<short subject describing the highlight>" <<'EOF'
+   <the step-6 summary, then a section listing each bug/noteworthy item with enough detail to act on>
+   EOF
+   ```
+
+   On a quiet run (jobs found and emailed normally, or nothing new, with no errors and nothing needing attention), skip this — the per-job emails are the signal, and a summary every 2 hours is spam.
+
 ## Rules
 
 - Only register real, currently-open postings with a direct link to the posting. The searcher must fetch the exact URL and confirm it loads an open posting before registering — never a constructed/guessed URL, and no aggregator links (LinkedIn/Indeed) if the company's own posting page is available.
