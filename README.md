@@ -6,7 +6,7 @@ An automated pipeline that watches a list of companies for new job postings, ded
 
 ```
 launchd (every 2 hours)
-   └─> claude -p "Follow the instructions in PROMPT.md"
+   └─> claude -p "Follow the instructions in PROMPT.md" --permission-mode acceptEdits
          ├─ 1. cache.py check       → which companies need a fresh search?
          ├─ 2. job-searcher agents  → one cheap Haiku subagent per company, in parallel
          │       ├─ finds the careers page + matching postings (web search)
@@ -65,7 +65,8 @@ Whatever the mode, every email also includes a **fit assessment**: which resume 
 | `jobs.db` | SQLite job tracker (gitignored, created on first run). |
 | `scripts/cache.py` | Fresh-vs-stale decision (TTL + random refresh). |
 | `scripts/jobsdb.py` | DB CRUD: `add` (dedupe), `pending`, `mark`, `set-resume`, `list`. |
-| `scripts/send_email.py` | Gmail SMTP sender; fills `email/TEMPLATE.md`, attaches the job's resume. |
+| `scripts/verify_url.py` | Posting liveness check against the ATS board API (Ashby/Greenhouse/Lever) — client-rendered ATS pages return 200 + an empty shell even for dead postings, so page fetches can't tell. |
+| `scripts/send_email.py` | Gmail SMTP sender; fills `email/TEMPLATE.md`, attaches the job's resume. Also `--summary "Subject"` (body on stdin) for run-summary/bug-report emails. |
 | `scripts/compile_resume.py` | pdflatex wrapper with a hard 1-page check (outputs to `resume/build/`). |
 | `scripts/log_usage.py` | Records each scheduled run's Claude Code usage (tokens, turns, duration, cost estimate) to `logs/usage.jsonl`; `--report` prints recent runs + totals. |
 | `email/TEMPLATE.md` | Email template (`Subject:` first line, body below, `{placeholders}`). |
@@ -93,7 +94,7 @@ Manual version:
    Edit `companies.txt` (your companies), the target-roles section of `PROMPT.md`, and `config.json` (your email + `resume_mode`).
 3. **Manual test run** from this directory:
    ```sh
-   mkdir -p logs && claude -p "Follow the instructions in PROMPT.md"
+   mkdir -p logs && claude -p "Follow the instructions in PROMPT.md" --permission-mode acceptEdits
    ```
    Run it twice — the second run should report everything cached/duplicate and send no emails.
 4. **Install the schedule** once manual runs look good:

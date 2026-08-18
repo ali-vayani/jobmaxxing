@@ -43,7 +43,7 @@ Check what exists: `resume/resume-bullet-database.md` and the `.tex`/`.pdf` base
 
 Offer to run the pipeline end-to-end right now, in this session: follow the instructions in `PROMPT.md` yourself (search, resume selection, emails). Suggest temporarily trimming `companies.txt` to 2–3 companies if their list is long. After the run, have them confirm the email(s) arrived. If they decline, give them the manual command instead:
 ```
-cd <this repo> && mkdir -p logs && claude -p "Follow the instructions in PROMPT.md"
+cd <this repo> && mkdir -p logs && claude -p "Follow the instructions in PROMPT.md" --permission-mode acceptEdits
 ```
 
 ## Step 6 — Schedule (launchd)
