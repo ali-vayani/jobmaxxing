@@ -8,7 +8,7 @@ For each new job the pipeline finds, the `resume-tailor` subagent (`.claude/agen
 
 **Custom builds:** the agent copies the nearest baseline's `.tex`, swaps in better bullets from the database (respecting same-work sets and the 17-bullet page budget), compiles with `scripts/compile_resume.py`, visually verifies line rendering, and attaches the result — **flagged in the email for manual review before submitting.**
 
-**Fit assessment:** whatever the mode, the agent writes a 3–5 sentence comparison of the chosen resume against the JD — which bullets hit the requirements, where the resume is weak, and any advice — stored on the job (`resume_fit`) and included in the email body.
+**Fit assessment:** whatever the mode, the agent scores the chosen resume against the JD on a 0–10 rubric (must-have coverage, domain alignment, differentiators, level match — defined in `.claude/agents/resume-tailor.md`) and writes a 3–5 sentence comparison — which bullets hit the requirements, where the resume is weak, and any advice. Both are stored on the job (`resume_score`, `resume_fit`) and included in the email body.
 
 ## Files
 

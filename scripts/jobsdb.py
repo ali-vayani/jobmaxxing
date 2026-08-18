@@ -2,10 +2,10 @@
 """Job tracking database. Dedupes jobs by normalized URL.
 
 Usage:
-  jobsdb.py add --company X --title Y --url Z [--jd "summary"]   -> prints NEW or DUPLICATE
+  jobsdb.py add --company X --title Y --url Z [--jd "summary"] [--term "Summer 27"]   -> prints NEW or DUPLICATE
   jobsdb.py pending                                              -> JSON list of jobs not yet emailed
   jobsdb.py mark --id N --status emailed
-  jobsdb.py set-resume --id N --path P --kind baseline|custom [--fit "assessment"]
+  jobsdb.py set-resume --id N --path P --kind baseline|custom [--fit "assessment"] [--score N]
   jobsdb.py list                                                 -> JSON list of all jobs
 """
 
@@ -41,8 +41,8 @@ def connect() -> sqlite3.Connection:
             status TEXT NOT NULL DEFAULT 'found'
         )"""
     )
-    # Migration for DBs created before the resume feature
-    for column in ("resume_path", "resume_kind", "resume_fit"):
+    # Migrations for DBs created before the resume/term/score features
+    for column in ("resume_path", "resume_kind", "resume_fit", "term", "resume_score"):
         try:
             conn.execute(f"ALTER TABLE jobs ADD COLUMN {column} TEXT")
         except sqlite3.OperationalError:
@@ -53,14 +53,15 @@ def connect() -> sqlite3.Connection:
 def cmd_add(args) -> None:
     conn = connect()
     cur = conn.execute(
-        "INSERT OR IGNORE INTO jobs (company, title, url_normalized, url, jd_summary, found_at) "
-        "VALUES (?, ?, ?, ?, ?, ?)",
+        "INSERT OR IGNORE INTO jobs (company, title, url_normalized, url, jd_summary, term, found_at) "
+        "VALUES (?, ?, ?, ?, ?, ?, ?)",
         (
             args.company,
             args.title,
             normalize_url(args.url),
             args.url,
             args.jd,
+            args.term,
             datetime.now(timezone.utc).isoformat(),
         ),
     )
@@ -69,13 +70,13 @@ def cmd_add(args) -> None:
 
 
 def rows_to_json(rows) -> str:
-    cols = ["id", "company", "title", "url", "jd_summary", "found_at", "status",
-            "resume_path", "resume_kind", "resume_fit"]
+    cols = ["id", "company", "title", "url", "jd_summary", "term", "found_at", "status",
+            "resume_path", "resume_kind", "resume_fit", "resume_score"]
     return json.dumps([dict(zip(cols, r)) for r in rows], indent=2)
 
 
-SELECT = ("SELECT id, company, title, url, jd_summary, found_at, status, "
-          "resume_path, resume_kind, resume_fit FROM jobs")
+SELECT = ("SELECT id, company, title, url, jd_summary, term, found_at, status, "
+          "resume_path, resume_kind, resume_fit, resume_score FROM jobs")
 
 
 def cmd_pending(args) -> None:
@@ -91,8 +92,8 @@ def cmd_list(args) -> None:
 def cmd_set_resume(args) -> None:
     conn = connect()
     cur = conn.execute(
-        "UPDATE jobs SET resume_path = ?, resume_kind = ?, resume_fit = ? WHERE id = ?",
-        (args.path, args.kind, args.fit, args.id),
+        "UPDATE jobs SET resume_path = ?, resume_kind = ?, resume_fit = ?, resume_score = ? WHERE id = ?",
+        (args.path, args.kind, args.fit, args.score, args.id),
     )
     conn.commit()
     if cur.rowcount == 0:
@@ -118,6 +119,7 @@ def main() -> None:
     p_add.add_argument("--title", required=True)
     p_add.add_argument("--url", required=True)
     p_add.add_argument("--jd", default="")
+    p_add.add_argument("--term", default="", help='Internship term, e.g. "Summer 27"')
     p_add.set_defaults(func=cmd_add)
 
     sub.add_parser("pending").set_defaults(func=cmd_pending)
@@ -128,6 +130,8 @@ def main() -> None:
     p_resume.add_argument("--path", required=True)
     p_resume.add_argument("--kind", required=True, choices=["baseline", "custom"])
     p_resume.add_argument("--fit", default=None, help="Fit assessment vs. the JD, included in the email")
+    p_resume.add_argument("--score", type=int, default=None, choices=range(0, 11),
+                          help="Rubric-based fit score 0-10, included in the email")
     p_resume.set_defaults(func=cmd_set_resume)
 
     p_mark = sub.add_parser("mark")

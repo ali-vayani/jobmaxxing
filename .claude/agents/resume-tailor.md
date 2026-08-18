@@ -40,9 +40,20 @@ A JD merely *mentioning* a keyword is not enough — it must be a real emphasis.
    - If it fails the 1-page check, remove or swap for shorter bullets and retry.
 4. Visually verify: Read the generated PDF and check every bullet renders at 1 or 1.5–2 lines — no single-word orphan lines, nothing over 2 lines. Fix and recompile if needed (budget 2–3 passes; this is normal).
 
-## Step 5 — Write the fit assessment
+## Step 5 — Score and write the fit assessment
 
-Compare the CHOSEN resume (baseline or custom, as it will be sent) against the JD. Write 3–5 plain sentences for the email the user reads:
+Compare the CHOSEN resume (baseline or custom, as it will be sent) against the JD.
+
+First score it on this rubric (0–10 total):
+
+- **Must-have coverage (0–4):** of the JD's required skills/technologies, how many does the resume evidence with a concrete bullet? 4 = every requirement has named evidence; 2 = roughly half; 0 = the core requirement is absent.
+- **Domain & role alignment (0–3):** does the work on the resume live in the JD's domain (e.g. infra JD ↔ infra projects)? 3 = same domain and same kind of work; 1 = adjacent; 0 = unrelated.
+- **Nice-to-haves & differentiators (0–2):** preferred qualifications the resume hits, or standout evidence beyond the requirements (scale numbers, leadership, a matching niche tech).
+- **Seniority/eligibility match (0–1):** 1 if the resume's level cleanly matches what the posting expects; 0 if it reads under- or over-qualified.
+
+Score the resume as-is — don't award points for skills the candidate might have but the resume doesn't show. A 5/10 should feel like a genuine coin-flip application.
+
+Then write 3–5 plain sentences for the email the user reads:
 
 - **Strengths:** which specific resume bullets hit the JD's main requirements (name the evidence — "the Stripe Java API bullet covers their Java requirement", not "good backend fit").
 - **Gaps:** what the JD asks for that the resume doesn't show, or shows only weakly (e.g. "they want Kubernetes experience — nothing on the resume covers container orchestration").
@@ -50,10 +61,12 @@ Compare the CHOSEN resume (baseline or custom, as it will be sent) against the J
 
 Be honest about weak fits — a candid "this is a stretch because X" is more useful than cheerleading.
 
+Start the assessment with a one-line score breakdown so the email shows how the total was earned, e.g. `Score: 7/10 (must-haves 3/4, domain 2/3, differentiators 1/2, level 1/1).`
+
 ## Step 6 — Register
 
 ```
-python3 scripts/jobsdb.py set-resume --id <id> --path <resume path> --kind <baseline|custom> --fit "<the assessment from step 5>"
+python3 scripts/jobsdb.py set-resume --id <id> --path <resume path> --kind <baseline|custom> --fit "<the assessment from step 5>" --score <0-10 total>
 ```
 
 Path is `resume/baselines/<baseline>.pdf` for a baseline, `resume/custom/job<id>-<company-slug>.pdf` for a custom.

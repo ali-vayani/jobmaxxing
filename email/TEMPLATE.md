@@ -1,4 +1,4 @@
-Subject: New job: {title} @ {company}
+Subject: {company} — {term} — {title}
 
 Hey,
 
