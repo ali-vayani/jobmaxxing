@@ -11,8 +11,10 @@
         <string>-lc</string>
         <!-- acceptEdits: headless runs can't answer permission prompts, and file-write
              allow rules (Write(.companies/**)) don't match in -p mode, so cache and
-             custom-resume writes get silently denied without it. -->
-        <string>claude -p "Follow the instructions in PROMPT.md" --permission-mode acceptEdits --output-format json 2>> "logs/run-$(date +%Y-%m-%d).log" | python3 scripts/log_usage.py >> "logs/run-$(date +%Y-%m-%d).log" 2>&amp;1</string>
+             custom-resume writes get silently denied without it.
+             --model sonnet: pins the orchestrator explicitly so it never inherits
+             whatever the interactive default happens to be (e.g. a pricier model). -->
+        <string>claude -p "Follow the instructions in PROMPT.md" --permission-mode acceptEdits --model sonnet --output-format json 2>> "logs/run-$(date +%Y-%m-%d).log" | python3 scripts/log_usage.py >> "logs/run-$(date +%Y-%m-%d).log" 2>&amp;1</string>
     </array>
 
     <key>WorkingDirectory</key>

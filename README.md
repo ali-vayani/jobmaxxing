@@ -20,11 +20,13 @@ launchd (every 2 hours)
          │       └─ custom: builds a job-specific .tex from the bullet database
          │            for every job — compiles + 1-page check, and any custom
          │            build is flagged for manual review
-         └─ 4. send_email.py        → one email per NEW job with the resume
-                                      attached, then mark emailed
+         ├─ 4. notion.py sync       → adds each NEW job scoring >= min_score to the
+         │                             Notion "Recommended" database, marks it synced
+         │                             (below-threshold jobs are marked filtered)
+         └─ 5. send_email.py        → ONE digest email per run listing what was added
 ```
 
-The split is deliberate: **Claude handles the fuzzy work** (finding careers pages, judging which roles match, summarizing JDs) while **plain Python handles everything deterministic** (cache freshness, dedup, email). The scripts are stdlib-only — nothing to install.
+The split is deliberate: **Claude handles the fuzzy work** (finding careers pages, judging which roles match, summarizing JDs) while **plain Python handles everything deterministic** (cache freshness, dedup, Notion writes, email). The scripts are stdlib-only — nothing to install.
 
 ### Caching
 
@@ -32,11 +34,13 @@ Each company's cache in `.companies/{slug}.md` stores the **route** — the care
 
 ### Dedup
 
-`jobs.db` (SQLite) is the source of truth for "have we seen this job." Every posting goes through `jobsdb.py add`, which normalizes the URL (drops `www.`, query params, trailing slashes) and does an `INSERT OR IGNORE` — so the same job found via slightly different links only ever produces one email. Jobs carry a status (`found` → `emailed`), so a crashed run just retries un-emailed jobs next time.
+`jobs.db` (SQLite) is the source of truth for "have we seen this job." Every posting goes through `jobsdb.py add`, which normalizes the URL (drops `www.`, query params, trailing slashes) and does an `INSERT OR IGNORE` — so the same job found via slightly different links only ever reaches Notion once. Jobs carry a status (`found` → `synced` or `filtered`), so a crashed run just retries unsynced jobs next time.
+
+Notion is a **mirror**, never the source of truth: dedupe runs against local SQLite on every job every 2 hours, so it stays fast and survives a network failure without re-recommending jobs you've already seen.
 
 ### Resume selection
 
-Five baseline resumes (GENERAL, INFRA, BACKEND, PRODUCT, AI) live in `resume/baselines/` as original PDFs plus reconstructed LaTeX sources, all built from `resume/resume-bullet-database.md` — the bullet bank that also defines which bullets can't co-occur and the one-page layout budget. Custom builds swap database bullets into the nearest baseline's `.tex`, compile with a hard 1-page check, get visually verified, and arrive flagged **"REVIEW IT before submitting"** in the email. Details: `resume/README.md`.
+Five baseline resumes (GENERAL, INFRA, BACKEND, PRODUCT, AI) live in `resume/baselines/` as original PDFs plus reconstructed LaTeX sources, all built from `resume/resume-bullet-database.md` — the bullet bank that also defines which bullets can't co-occur and the one-page layout budget. Custom builds swap database bullets into the nearest baseline's `.tex`, compile with a hard 1-page check, get visually verified, and arrive flagged **"REVIEW IT before submitting"**. Details: `resume/README.md`.
 
 **Resume mode** (`resume_mode` in `config.json`) controls how eagerly customs are built:
 
@@ -65,8 +69,10 @@ Whatever the mode, every email also includes a **fit assessment**: which resume 
 | `jobs.db` | SQLite job tracker (gitignored, created on first run). |
 | `scripts/cache.py` | Fresh-vs-stale decision (TTL + random refresh). |
 | `scripts/jobsdb.py` | DB CRUD: `add` (dedupe), `pending`, `mark`, `set-resume`, `list`. |
+| `email/TEMPLATE.md` | Legacy per-job email template, used only by `send_email.py --job-id`. |
 | `scripts/verify_url.py` | Posting liveness check against the ATS board API (Ashby/Greenhouse/Lever) — client-rendered ATS pages return 200 + an empty shell even for dead postings, so page fetches can't tell. |
-| `scripts/send_email.py` | Gmail SMTP sender; fills `email/TEMPLATE.md`, attaches the job's resume. Also `--summary "Subject"` (body on stdin) for run-summary/bug-report emails. |
+| `scripts/notion.py` | Notion mirror: `inspect` (what the integration can see), `init --parent <page_id>` (create the Recommended database), `sync` (push new high-fit jobs, print the digest body). |
+| `scripts/send_email.py` | Gmail SMTP sender. `--summary "Subject"` (body on stdin) sends the run digest and bug reports. `--job-id N` sends the legacy one-email-per-job format, no longer used by the pipeline. |
 | `scripts/compile_resume.py` | pdflatex wrapper with a hard 1-page check (outputs to `resume/build/`). |
 | `scripts/log_usage.py` | Records each scheduled run's Claude Code usage (tokens, turns, duration, cost estimate) to `logs/usage.jsonl`; `--report` prints recent runs + totals. |
 | `email/TEMPLATE.md` | Email template (`Subject:` first line, body below, `{placeholders}`). |
@@ -110,7 +116,8 @@ Manual version:
 
 ```sh
 python3 scripts/jobsdb.py list                                        # everything ever found
-python3 scripts/jobsdb.py pending                                     # found but not yet emailed
+python3 scripts/jobsdb.py pending                                     # found but not yet synced
+python3 scripts/notion.py sync --dry-run                              # what would go to Notion now
 python3 scripts/cache.py check                                        # which companies would be searched right now
 python3 scripts/log_usage.py --report                                 # per-run usage: tokens, turns, duration, cost
 

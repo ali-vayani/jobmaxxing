@@ -4,7 +4,7 @@
 Usage:
   jobsdb.py add --company X --title Y --url Z [--jd "summary"] [--term "Summer 27"]   -> prints NEW or DUPLICATE
   jobsdb.py pending                                              -> JSON list of jobs not yet emailed
-  jobsdb.py mark --id N --status emailed
+  jobsdb.py mark --id N --status emailed|synced|filtered
   jobsdb.py set-resume --id N --path P --kind baseline|custom [--fit "assessment"] [--score N]
   jobsdb.py list                                                 -> JSON list of all jobs
 """
@@ -42,7 +42,8 @@ def connect() -> sqlite3.Connection:
         )"""
     )
     # Migrations for DBs created before the resume/term/score features
-    for column in ("resume_path", "resume_kind", "resume_fit", "term", "resume_score"):
+    for column in ("resume_path", "resume_kind", "resume_fit", "term", "resume_score",
+                   "notion_page_id"):
         try:
             conn.execute(f"ALTER TABLE jobs ADD COLUMN {column} TEXT")
         except sqlite3.OperationalError:
@@ -71,12 +72,12 @@ def cmd_add(args) -> None:
 
 def rows_to_json(rows) -> str:
     cols = ["id", "company", "title", "url", "jd_summary", "term", "found_at", "status",
-            "resume_path", "resume_kind", "resume_fit", "resume_score"]
+            "resume_path", "resume_kind", "resume_fit", "resume_score", "notion_page_id"]
     return json.dumps([dict(zip(cols, r)) for r in rows], indent=2)
 
 
 SELECT = ("SELECT id, company, title, url, jd_summary, term, found_at, status, "
-          "resume_path, resume_kind, resume_fit, resume_score FROM jobs")
+          "resume_path, resume_kind, resume_fit, resume_score, notion_page_id FROM jobs")
 
 
 def cmd_pending(args) -> None:
@@ -136,7 +137,8 @@ def main() -> None:
 
     p_mark = sub.add_parser("mark")
     p_mark.add_argument("--id", type=int, required=True)
-    p_mark.add_argument("--status", required=True, choices=["found", "emailed"])
+    p_mark.add_argument("--status", required=True,
+                        choices=["found", "emailed", "synced", "filtered"])
     p_mark.set_defaults(func=cmd_mark)
 
     args = parser.parse_args()

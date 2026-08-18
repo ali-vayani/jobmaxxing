@@ -1,4 +1,8 @@
 {
   "resume_mode": "hybrid",
-  "email": "you@example.com"
+  "email": "you@example.com",
+  "notion": {
+    "database_id": "",
+    "min_score": 0
+  }
 }
